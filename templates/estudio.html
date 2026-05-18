@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>O Estúdio - L.I.A</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+</head>
+<body class="dashboard-body">
+
+    <div class="video-container">
+        {% if current_user.background_file.endswith('.mp4') %}
+            <video id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" autoplay loop muted playsinline crossorigin="anonymous"></video>
+        {% else %}
+            <img id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1;" crossorigin="anonymous">
+        {% endif %}
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-header"><a href="{{ url_for('home') }}" class="logo">L.I.A</a><p class="subtitle">Workstation</p></div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Visão Geral</a>
+            <a href="{{ url_for('estudio') }}" class="{% if request.endpoint == 'estudio' %}active{% endif %}">O Estúdio</a>
+            <a href="{{ url_for('acervo') }}" class="{% if request.endpoint == 'acervo' %}active{% endif %}">Meu Acervo</a>
+            <a href="{{ url_for('mural') }}" class="{% if request.endpoint == 'mural' %}active{% endif %}">Mural Público</a>
+    
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('perfil_publico', username=current_user.username) }}" class="{% if request.endpoint in ['perfil_publico', 'editar_perfil'] %}active{% endif %}">Meu Perfil</a>
+    {% endif %}
+        </nav>
+        <div class="sidebar-footer">
+            <p>User: <strong>{{ current_user.username }}</strong></p>
+            <form action="{{ url_for('mudar_fundo') }}" method="post" enctype="multipart/form-data">
+                <label for="bg-upload" class="btn-change-bg" style="cursor:pointer;">Trocar Fundo ⇪</label>
+                <input type="file" id="bg-upload" name="fundo" accept="image/*,video/mp4" style="display: none;" onchange="this.form.submit()">
+            </form>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Sair do Sistema</a>
+        </div>
+    </aside>
+
+    <main class="main-panel">
+        <header class="panel-header" style="margin-bottom: 30px; padding: 25px;">
+            <h2>Laboratório Criativo</h2>
+            <p>Escreva sua ideia, use os blocos construtores ou a Varinha Mágica para finalizar.</p>
+        </header>
+
+        <section class="dashboard-glass" style="padding:40px; display:flex; gap:30px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 300px;">
+                <form action="{{ url_for('estudio') }}" method="POST" id="form-gerar">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="color:#ccc;">Comando Base:</label>
+                        <button type="button" class="btn-magic" id="btn-varinha" style="margin: 0;">🪄 Varinha Mágica</button>
+                    </div>
+                    
+                    <textarea name="prompt" id="prompt-box" placeholder="Ex: Um cavaleiro medieval na chuva..." required style="width:100%; height:120px; border-radius:10px; padding:15px; font-size:1.1rem; resize:vertical; margin-bottom:20px;">{{ ref_prompt }}</textarea>
+                    
+                    <div class="prompt-builder">
+                        <div class="builder-category">
+                            <h5>🎨 Estilos de Arte</h5>
+                            <span class="tag-pill" onclick="addTag('Cyberpunk style')">Cyberpunk</span>
+                            <span class="tag-pill" onclick="addTag('Studio Ghibli style')">Anime Ghibli</span>
+                            <span class="tag-pill" onclick="addTag('Hyper-realistic, 8k')">Fotorrealista</span>
+                            <span class="tag-pill" onclick="addTag('Oil painting, Renaissance')">Pintura a Óleo</span>
+                        </div>
+                        <div class="builder-category">
+                            <h5>💡 Iluminação</h5>
+                            <span class="tag-pill" onclick="addTag('Cinematic lighting')">Cinematográfica</span>
+                            <span class="tag-pill" onclick="addTag('Neon glowing lights')">Luzes Neon</span>
+                            <span class="tag-pill" onclick="addTag('Golden hour lighting')">Pôr do Sol (Golden Hour)</span>
+                            <span class="tag-pill" onclick="addTag('Dark, moody atmosphere')">Sombria/Dark</span>
+                        </div>
+                        <div class="builder-category" style="margin-bottom: 0;">
+                            <h5>🎥 Ângulo de Câmera</h5>
+                            <span class="tag-pill" onclick="addTag('Close-up portrait')">Close-up Rosto</span>
+                            <span class="tag-pill" onclick="addTag('Wide angle shot')">Visão Panorâmica</span>
+                            <span class="tag-pill" onclick="addTag('Dynamic angle, action shot')">Ângulo de Ação</span>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-gerar" class="btn-gerar-neural">GERAR IMAGEM</button>
+                </form>
+            </div>
+            
+            {% if ref_img %}
+            <div style="width:250px;">
+                <p style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">Referência (Remix):</p>
+                <img src="{{ ref_img }}" style="width:100%; border-radius:10px; border:1px solid rgba(var(--r), var(--g), var(--b), 0.3);">
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        // Extração de Cor
+        function extrairCorDoFundo() {
+            const media = document.getElementById('fundo-sistema');
+            if (!media) return;
+            const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = 50; canvas.height = 50;
+            try {
+                ctx.drawImage(media, 0, 0, canvas.width, canvas.height); const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                let r = 0, g = 0, b = 0, count = 0;
+                for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; count++; }
+                r = Math.min(255, Math.floor((r / count) * 1.5)); g = Math.min(255, Math.floor((g / count) * 1.5)); b = Math.min(255, Math.floor((b / count) * 1.5));
+                document.documentElement.style.setProperty('--r', r); document.documentElement.style.setProperty('--g', g); document.documentElement.style.setProperty('--b', b);
+            } catch (e) {}
+        }
+        const fundoElement = document.getElementById('fundo-sistema');
+        if (fundoElement.tagName === 'VIDEO') { fundoElement.addEventListener('canplay', extrairCorDoFundo); } else { if (fundoElement.complete) extrairCorDoFundo(); else fundoElement.addEventListener('load', extrairCorDoFundo); }
+        
+        // FUNÇÃO DO CONSTRUTOR DE PROMPTS
+        function addTag(tag) {
+            const caixa = document.getElementById('prompt-box');
+            let textoAtual = caixa.value.trim();
+            
+            // Verifica se a tag já existe para não repetir
+            if (!textoAtual.includes(tag)) {
+                if (textoAtual === "") {
+                    caixa.value = tag;
+                } else if (textoAtual.endsWith(',')) {
+                    caixa.value = textoAtual + " " + tag;
+                } else {
+                    caixa.value = textoAtual + ", " + tag;
+                }
+                
+                // Feedback visual de sucesso
+                caixa.style.borderColor = "#00ff88";
+                setTimeout(() => { caixa.style.borderColor = ""; }, 300);
+            }
+        }
+        
+        // Varinha Mágica
+        const ideiasAleatorias = [
+            "A majestic glowing neon dragon coiled around a futuristic skyscraper in Tokyo, cyberpunk style",
+            "A cozy wooden cabin hidden deep in an enchanted autumn forest, golden hour light",
+            "An astronaut floating in the vastness of space, looking at a beautifully detailed glowing purple nebula",
+            "A fierce samurai standing in the pouring rain at night, water splashing on his dark armor"
+        ];
+
+        document.getElementById('btn-varinha').addEventListener('click', async function() {
+            const caixa = document.getElementById('prompt-box');
+            const textoAtual = caixa.value.trim();
+            const btn = this; const textoOriginal = btn.innerHTML;
+            const tagsPremium = ", masterpiece, best quality";
+
+            if (textoAtual === "") {
+                caixa.value = ideiasAleatorias[Math.floor(Math.random() * ideiasAleatorias.length)] + tagsPremium;
+                caixa.style.borderColor = "#00ff88"; setTimeout(() => { caixa.style.borderColor = ""; }, 500);
+            } else {
+                btn.innerHTML = "🪄 Traduzindo..."; btn.style.pointerEvents = "none"; caixa.style.opacity = "0.5";
+                try {
+                    const resposta = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textoAtual)}&langpair=pt|en`);
+                    const dados = await resposta.json();
+                    if(dados && dados.responseData && dados.responseData.translatedText) {
+                        caixa.value = dados.responseData.translatedText + tagsPremium;
+                    } else { if(!textoAtual.includes("masterpiece")) caixa.value = textoAtual + tagsPremium; }
+                } catch (erro) { if(!textoAtual.includes("masterpiece")) caixa.value = textoAtual + tagsPremium; }
+                caixa.style.opacity = "1"; btn.innerHTML = textoOriginal; btn.style.pointerEvents = "auto";
+                caixa.style.borderColor = "#00ff88"; setTimeout(() => { caixa.style.borderColor = ""; }, 500);
+            }
+        });
+
+        // Impede duplo clique e muda o botão para o modo "Sincronizando"
+        const formEstudio = document.getElementById('form-gerar');
+        if(formEstudio) {
+            formEstudio.addEventListener('submit', function() {
+                const btn = document.getElementById('btn-gerar');
+                
+                // Muda o texto e aplica os estilos visuais de travamento
+                btn.innerHTML = '⏳ Sincronizando...';
+                btn.style.pointerEvents = 'none'; // Desabilita o hover imediatamente
+                btn.disabled = true;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurações de Perfil - L.I.A</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <style>
+        :root { --r: 0; --g: 153; --b: 255; --cor-tema-forte: rgb(var(--r), var(--g), var(--b)); }
+        .dashboard-glass, .sidebar, .panel-header { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; backdrop-filter: blur(15px); border-radius: 15px !important; }
+        
+        .edit-container { max-width: 800px; margin: 0 auto; padding: 40px; color: white; }
+        
+        /* Preview da Foto */
+        .avatar-edit-wrapper { position: relative; width: 150px; height: 150px; margin: 0 auto 30px; }
+        .avatar-preview { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--cor-tema-forte); box-shadow: 0 0 20px var(--cor-tema-forte); }
+        .file-label { position: absolute; bottom: 0; right: 0; background: var(--cor-tema-forte); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .file-label:hover { transform: scale(1.1); }
+
+        textarea { width: 100%; height: 150px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 10px; font-size: 1.1rem; resize: none; margin-top: 10px; outline: none; transition: 0.3s; }
+        textarea:focus { border-color: var(--cor-tema-forte); box-shadow: 0 0 15px rgba(var(--r), var(--g), var(--b), 0.3); }
+
+        .btn-save { background: var(--cor-tema-forte); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; margin-top: 30px; transition: 0.3s; }
+        .btn-save:hover { filter: brightness(1.2); box-shadow: 0 0 20px var(--cor-tema-forte); transform: translateY(-2px); }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="video-container">
+        {% if current_user.background_file.endswith('.mp4') %}
+            <video id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" autoplay loop muted playsinline crossorigin="anonymous"></video>
+        {% else %}
+            <img id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1;" crossorigin="anonymous">
+        {% endif %}
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-header"><a href="{{ url_for('home') }}" class="logo">L.I.A</a><p class="subtitle">Workstation</p></div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Visão Geral</a>
+            <a href="{{ url_for('estudio') }}" class="{% if request.endpoint == 'estudio' %}active{% endif %}">O Estúdio</a>
+            <a href="{{ url_for('acervo') }}" class="{% if request.endpoint == 'acervo' %}active{% endif %}">Meu Acervo</a>
+            <a href="{{ url_for('mural') }}" class="{% if request.endpoint == 'mural' %}active{% endif %}">Mural Público</a>
+    
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('perfil_publico', username=current_user.username) }}" class="{% if request.endpoint in ['perfil_publico', 'editar_perfil'] %}active{% endif %}">Meu Perfil</a>
+    {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>User: <strong>{{ current_user.username }}</strong></p>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Sair do Sistema</a>
+        </div>
+    </aside>
+
+    <main class="main-panel">
+        <header class="panel-header" style="margin-bottom: 30px; padding: 25px;">
+            <h2>Configurações de Identidade</h2>
+            <p>Personalize como a comunidade L.I.A vê você.</p>
+        </header>
+
+        <section class="dashboard-glass edit-container">
+            <form action="{{ url_for('editar_perfil') }}" method="POST" enctype="multipart/form-data">
+                
+                <div class="avatar-edit-wrapper">
+                    <img id="preview-img" src="{{ url_for('static', filename=current_user.profile_pic) }}" class="avatar-preview">
+                    <label for="foto_perfil" class="file-label">📸</label>
+                    <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;" onchange="previewFile()">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="color: #ccc; font-weight: bold;">Sua Bio Artística:</label>
+                    <textarea name="bio" placeholder="Conte sua história...">{{ current_user.bio }}</textarea>
+                </div>
+
+                <button type="submit" class="btn-save">SALVAR ALTERAÇÕES</button>
+                <a href="{{ url_for('perfil_publico', username=current_user.username) }}" style="display: block; text-align: center; margin-top: 20px; color: #aaa; text-decoration: none;">Voltar ao Perfil</a>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        // Preview da foto antes de enviar
+        function previewFile() {
+            const preview = document.getElementById('preview-img');
+            const file = document.getElementById('foto_perfil').files[0];
+            const reader = new FileReader();
+            reader.onloadend = function () { preview.src = reader.result; }
+            if (file) { reader.readAsDataURL(file); }
+        }
+
+        // Cores Dinâmicas
+        function extrairCorDoFundo() {
+            const media = document.getElementById('fundo-sistema');
+            if (!media) return;
+            const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = 50; canvas.height = 50;
+            try {
+                ctx.drawImage(media, 0, 0, canvas.width, canvas.height); const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                let r = 0, g = 0, b = 0, count = 0;
+                for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; count++; }
+                r = Math.min(255, Math.floor((r / count) * 1.5)); g = Math.min(255, Math.floor((g / count) * 1.5)); b = Math.min(255, Math.floor((b / count) * 1.5));
+                document.documentElement.style.setProperty('--r', r); document.documentElement.style.setProperty('--g', g); document.documentElement.style.setProperty('--b', b);
+            } catch (e) {}
+        }
+        const fundoElement = document.getElementById('fundo-sistema');
+        if (fundoElement.tagName === 'VIDEO') { fundoElement.addEventListener('canplay', extrairCorDoFundo); } else { if (fundoElement.complete) extrairCorDoFundo(); else fundoElement.addEventListener('load', extrairCorDoFundo); }
+    </script>
+</body>
+</html>

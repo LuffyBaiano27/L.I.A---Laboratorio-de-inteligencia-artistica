@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - L.I.A</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">L.I.A</div>
+        <div class="nav-links">
+            <a href="/galeria" style="margin-right: 30px;">Mural</a>
+            <a href="/login" class="btn-login-nav">ENTRAR</a>
+            <a href="/cadastro" class="btn-login-nav highlight">CADASTRAR</a>
+        </div>
+    </nav>
+
+    <div class="video-container">
+        <video id="vid_auth" src="{{ url_for('static', filename='videos/futuristic-space-drive.mp4') }}" autoplay loop muted playsinline></video>
+    </div>
+
+    <div class="auth-wrapper">
+        
+        <div class="auth-phrase-container">
+            <div class="auth-phrase-glass">
+                <p>Dê asas à sua imaginação.</p>
+            </div>
+        </div>
+
+        <div class="auth-card">
+            <h3 class="auth-title">Acesso ao Laboratório</h3>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="/login" method="post" class="glass-form">
+                <input type="text" name="username_or_email" placeholder="Usuário ou E-mail" required>
+                <input type="password" name="password" placeholder="Senha" required>
+                
+                <div class="form-options">
+                    <label>
+                        <input type="checkbox" name="salvar_login"> Salvar login
+                    </label>
+                    <a href="#" onclick="alert('⚠️ Ambiente de Demonstração:\n\nO servidor SMTP para disparo de e-mails de recuperação está desativado nesta versão acadêmica. \n\nPor favor, crie uma nova conta ou contate o administrador de infraestrutura.'); return false;" style="color: var(--cor-tema-forte); text-decoration: none;">Esqueceu a senha?</a>
+                </div>
+                
+                <button type="submit" class="btn-grad-crimson" style="width: 100%;">Iniciar Sessão</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

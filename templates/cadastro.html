@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro - L.I.A</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">L.I.A</a>
+        <div class="nav-links">
+            <a href="/galeria" style="margin-right: 30px;">Mural</a>
+            <a href="/login" class="btn-login-nav">ENTRAR</a>
+            <a href="/cadastro" class="btn-login-nav highlight">CADASTRAR</a>
+        </div>
+    </nav>
+
+    <div class="video-container">
+        <video id="vid_auth" src="{{ url_for('static', filename='videos/anime-girl-sword-blue-eyes-live-wallpaper-wallsflow-com.mp4') }}" autoplay loop muted playsinline></video>
+    </div>
+
+    <div class="auth-wrapper">
+        
+        <div class="auth-phrase-glass">
+            <p>Você está prestes a descobrir um mundo de possibilidades.</p>
+        </div>
+
+        <div class="auth-card">
+            <h3 class="auth-title">Criar Conta</h3>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="/cadastro" method="post" class="glass-form">
+                <input type="text" name="username" placeholder="Usuário" required>
+                <input type="email" name="email" placeholder="E-mail" required>
+                <input type="password" name="password" placeholder="Senha" required>
+                <input type="date" name="data_nascimento" placeholder="Data de Nascimento">
+                
+                <div class="form-options">
+                    <label>
+                        <input type="checkbox" name="termos" required> Li e concordo com os termos.
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-grad-blue" style="width: 100%;">Finalizar Cadastro</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

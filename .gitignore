@@ -1,0 +1,16 @@
+# Ambientes Virtuais
+venv/
+env/
+
+# Arquivos compilados do Python
+__pycache__/
+*.pyc
+
+# Banco de Dados (Para não subir os testes)
+instance/
+*.db
+*.sqlite3
+
+# Arquivos de Sistema Operacional
+.DS_Store
+Thumbs.db
