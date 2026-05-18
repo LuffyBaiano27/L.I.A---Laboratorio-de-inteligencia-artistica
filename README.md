@@ -56,7 +56,7 @@ Para testar o sistema na sua máquina, siga os passos abaixo:
 2. **cd LIA-Laboratorio-Inteligencia-Artistica**
 
 3. **python -m venv venv**
-    ```venv\Scripts\activate
+    ```venv\Scripts\activate```
 
 4. **pip install -r requirements.txt**
 
