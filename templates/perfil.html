@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
     <title>Perfil de {{ user.username }} - L.I.A</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
@@ -9,7 +10,13 @@
         :root { --r: 0; --g: 153; --b: 255; --cor-tema-forte: rgb(var(--r), var(--g), var(--b)); }
         * { box-sizing: border-box; }
         .main-panel { padding: 30px; max-width: 100%; overflow-x: hidden; }
-        .dashboard-glass, .sidebar, .panel-header, .empty-state-card { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; box-shadow: 0 8px 32px rgba(var(--r), var(--g), var(--b), 0.2) !important; backdrop-filter: blur(15px); border-radius: 15px !important; }
+        
+        /* CORREÇÃO DAS BORDAS: .sidebar removida deste grupo para não ficar arredondada */
+        .dashboard-glass, .panel-header, .empty-state-card { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; box-shadow: 0 8px 32px rgba(var(--r), var(--g), var(--b), 0.2) !important; backdrop-filter: blur(15px); border-radius: 15px !important; }
+        
+        /* Regra exclusiva da sidebar com bordas retas */
+        .sidebar { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border-right: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; backdrop-filter: blur(15px); }
+        
         .sidebar-nav a.active { background: rgba(var(--r), var(--g), var(--b), 0.3) !important; border-left: 4px solid var(--cor-tema-forte) !important; }
         .btn-download { background: var(--cor-tema-forte) !important; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; margin-bottom: 10px; transition: 0.3s; width: 100%; text-align: center; cursor: pointer; }
         .btn-download:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--cor-tema-forte); }
@@ -44,19 +51,21 @@
 </head>
 <body class="dashboard-body">
 
-    <div class="video-container">
+    <div class="video-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050505;">
         {% if current_user.is_authenticated and current_user.background_file %}
-            {% if current_user.background_file.endswith('.mp4') %}
-                <video id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" autoplay loop muted playsinline crossorigin="anonymous"></video>
+            {% set bg_url = current_user.background_file if current_user.background_file.startswith('http') else url_for('static', filename=current_user.background_file) %}
+            
+            {% if '.mp4' in bg_url or bg_url.endswith('.mp4') %}
+                <video id="fundo-sistema" src="{{ bg_url }}" autoplay loop muted playsinline preload="auto" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: cover; position: fixed; z-index: -2; pointer-events: none;"></video>
             {% else %}
-                <img id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1;" crossorigin="anonymous">
+                <img id="fundo-sistema" src="{{ bg_url }}" crossorigin="anonymous" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1; transform: translateZ(0); will-change: transform;">
             {% endif %}
         {% else %}
-            <video id="fundo-sistema" src="{{ url_for('static', filename='videos/shadow-crown.mp4') }}" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1;" autoplay loop muted playsinline crossorigin="anonymous"></video>
+            <video id="fundo-sistema" src="COLE_O_LINK_DO_IMGUR_DO_SHADOW_CROWN.mp4" crossorigin="anonymous" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1; transform: translateZ(0); will-change: transform;" autoplay loop muted playsinline></video>
         {% endif %}
     </div>
 
-    <aside class="sidebar dashboard-glass">
+    <aside class="sidebar">
         <div class="sidebar-header"><a href="{{ url_for('home') }}" class="logo">L.I.A</a><p class="subtitle">Workstation</p></div>
         <nav class="sidebar-nav">
             <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Visão Geral</a>
@@ -71,13 +80,19 @@
         <div class="sidebar-footer">
             {% if current_user.is_authenticated %}
                 <p>User: <strong>{{ current_user.username }}</strong></p>
-                <form action="{{ url_for('mudar_fundo') }}" method="post" enctype="multipart/form-data">
-                    <label for="bg-upload" class="btn-change-bg" style="cursor:pointer;">Trocar Fundo ⇪</label>
-                    <input type="file" id="bg-upload" name="fundo" accept="image/*,video/mp4" style="display: none;" onchange="this.form.submit()">
+                
+                <form action="{{ url_for('editar_perfil') }}" method="POST" id="form-fundo-rapido" style="display: none;">
+                    <input type="hidden" name="background_url" id="link_fundo_rapido">
                 </form>
+
+                <a onclick="solicitarLinkFundo()" style="display: block; text-align: left; color: #0099ff; font-weight: bold; cursor: pointer; margin: 15px 0; text-decoration: none; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.5)'" onmouseout="this.style.filter='none'">
+                    Trocar Fundo ⇪
+                </a>
+
                 <a href="{{ url_for('logout') }}" class="btn-logout">Sair do Sistema</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn-download" style="text-decoration: none; display: block; background: #0099ff; border: none;">Fazer Login</a>
+                <p style="color: #ccc; margin-bottom: 15px; font-size: 0.9rem; text-align: center;">Visitante Anônimo</p>
+                <a href="{{ url_for('login') }}" class="btn-download" style="text-decoration: none; display: block; background: #0099ff; border: none; padding: 10px; border-radius: 5px; color: white; text-align: center;">Fazer Login</a>
             {% endif %}
         </div>
     </aside>
@@ -193,6 +208,17 @@
         <span class="nav-seta seta-dir" onclick="mudarImagem(1)">&#10095;</span>
         <p id="legendaModal" class="modal-legenda"></p>
     </div>
+
+    <script>
+        function solicitarLinkFundo() {
+            let novoLink = prompt("🔗 Cole o link direto do Dropbox (com ?raw=1 no final) ou Imgur para o seu novo papel de parede:");
+            
+            if (novoLink && novoLink.trim() !== "") {
+                document.getElementById('link_fundo_rapido').value = novoLink.trim();
+                document.getElementById('form-fundo-rapido').submit();
+            }
+        }
+    </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
 

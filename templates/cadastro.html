@@ -4,20 +4,21 @@
     <meta charset="UTF-8">
     <title>Cadastro - L.I.A</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
+    <meta name="referrer" content="no-referrer">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 </head>
 <body>
     <nav class="navbar">
         <a href="/" class="logo">L.I.A</a>
         <div class="nav-links">
-            <a href="/galeria" style="margin-right: 30px;">Mural</a>
-            <a href="/login" class="btn-login-nav">ENTRAR</a>
-            <a href="/cadastro" class="btn-login-nav highlight">CADASTRAR</a>
+            <a href="/mural" style="margin-right: 30px;">Mural</a>
+            <a href="/login" class="btn-login-nav">Login</a>
+            <a href="/cadastro" class="btn-login-nav highlight">Registro</a>
         </div>
     </nav>
 
     <div class="video-container">
-        <video id="vid_auth" src="{{ url_for('static', filename='videos/anime-girl-sword-blue-eyes-live-wallpaper-wallsflow-com.mp4') }}" autoplay loop muted playsinline></video>
+        <video id="vid_auth" src="https://imgur.com/BZMmAYH.mp4" autoplay loop muted playsinline></video>
     </div>
 
     <div class="auth-wrapper">

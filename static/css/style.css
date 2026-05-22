@@ -27,7 +27,6 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
-    /* O RETÂNGULO PRETO FOI DIMINUÍDO AQUI (De 20px para 12px) */
     padding: 12px 50px; 
     display: flex;
     justify-content: space-between;
@@ -41,7 +40,7 @@ body {
     font-weight: bold;
     letter-spacing: 2px;
     color: white;
-    text-decoration: none; /* L.I.A agora é um botão sem sublinhado */
+    text-decoration: none;
 }
 
 .nav-links a {
@@ -85,6 +84,8 @@ body {
     width: 100vw;
     height: 100vh;
     z-index: -1;
+    transform: translateZ(0); 
+    pointer-events: none;
 }
 
 video {
@@ -95,6 +96,8 @@ video {
     height: 100%;
     object-fit: cover;
     transition: opacity 0.5s ease-in-out;
+    will-change: transform;
+    backface-visibility: hidden;
 }
 
 #vid1 { opacity: 1; }
@@ -207,7 +210,7 @@ video {
 }
 
 /* =========================================
-   6. BOTÕES PREMIUM COM GRADIENTE
+   6. BOTÕES GRADIENTE
    ========================================= */
 [class^="btn-grad-"] {
     display: inline-block;
@@ -252,7 +255,7 @@ video {
 }
 
 /* =========================================
-   7. CARDS SUSCINTOS (PREMIUM)
+   7. CARDS
    ========================================= */
 .premium-card {
     background-color: rgba(0, 0, 0, 0.1);
@@ -342,7 +345,6 @@ video {
     justify-content: flex-end; 
     align-items: center;       
     padding-right: 8%;         
-    /* A ZONA DE SEGURANÇA: Garante que o card nunca encoste na Navbar */
     padding-top: 80px;         
     position: relative;
     z-index: 1;
@@ -376,13 +378,13 @@ video {
 /* O CARD SUPER COMPACTO */
 .auth-card {
     width: 100%;
-    max-width: 380px; /* Mais estreito */
+    max-width: 380px;
     background-color: rgba(10, 10, 10, 0.6);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 15px; /* Bordas um pouco mais fechadas */
-    padding: 30px 35px; /* Padding interno bem menor */
+    border-radius: 15px;
+    padding: 30px 35px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -390,25 +392,24 @@ video {
 }
 
 .auth-title {
-    font-size: 1.6rem; /* Título menor */
-    margin-bottom: 20px; /* Muito menos espaço abaixo do título */
+    font-size: 1.6rem;
+    margin-bottom: 20px;
     text-align: center;
     text-shadow: 0 0 10px rgba(255,255,255,0.3);
 }
 
-/* Caixas de Texto Afinaadas */
 .glass-form input[type="text"],
 .glass-form input[type="email"],
 .glass-form input[type="password"],
 .glass-form input[type="date"] {
     width: 100%;
-    padding: 12px 15px; /* Altura da caixa reduzida */
-    margin-bottom: 12px; /* Espaço entre as caixas coladinho */
+    padding: 12px 15px;
+    margin-bottom: 12px;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     color: white;
-    font-size: 0.95rem; /* Fonte levemente menor */
+    font-size: 0.95rem;
     transition: all 0.3s ease;
 }
 
@@ -427,8 +428,8 @@ video {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px; /* Reduzido */
-    font-size: 0.85rem; /* Fonte menor */
+    margin-bottom: 20px;
+    font-size: 0.85rem;
     color: #ccc;
 }
 
@@ -456,7 +457,7 @@ video {
    10. PAINEL DE CONTROLE (DASHBOARD)
    ========================================= */
 .dashboard-body {
-    /* Fundo transparente para o vídeo aparecer! */
+
     background-color: transparent; 
     display: flex;
     height: 100vh;
@@ -530,7 +531,6 @@ video {
     color: #fff;
 }
 
-/* Botão de Trocar Fundo */
 .btn-change-bg {
     display: block;
     margin-top: 15px;
@@ -556,13 +556,12 @@ video {
     color: #ff4d4d;
 }
 
-/* A Área Principal */
 .main-panel {
     flex: 1;
     padding: 50px;
     overflow-y: auto; 
     z-index: 5;
-    background: rgba(0,0,0,0.3); /* Escurece um pouco o vídeo atrás da área de trabalho para facilitar a leitura */
+    background: rgba(0,0,0,0.3); 
 }
 
 .dashboard-glass-header {
@@ -624,53 +623,7 @@ video {
     text-align: center;
     margin-top: 50px;
 }
-/* =========================================
-   11. MODO CLARO (LIGHT MODE)
-   ========================================= */
-body.light-mode .main-panel {
-    background: rgba(255, 255, 255, 0.7); /* Fundo da área de trabalho esbranquiçado */
-}
 
-body.light-mode .dashboard-glass {
-    background-color: rgba(255, 255, 255, 0.75); /* Vidro branco translúcido */
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
-body.light-mode .dashboard-glass-header {
-    background-color: rgba(255, 255, 255, 0.85);
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
-body.light-mode .panel-header h2,
-body.light-mode .stat-value,
-body.light-mode .recent-activity h3,
-body.light-mode .sidebar-footer strong {
-    color: #111; /* Textos que eram brancos viram escuros */
-}
-
-body.light-mode .panel-header p,
-body.light-mode .stat-card h3,
-body.light-mode .empty-state,
-body.light-mode .sidebar-header .subtitle,
-body.light-mode .sidebar-footer p {
-    color: #555; /* Textos cinzas escurecem */
-}
-
-body.light-mode .sidebar-nav a {
-    color: #444;
-}
-
-body.light-mode .sidebar-nav a.active {
-    color: #000;
-    border-left-color: #0033cc;
-    background: linear-gradient(90deg, rgba(0, 51, 204, 0.1) 0%, rgba(255,255,255,0) 100%);
-}
-
-body.light-mode .glass-form input[type="text"] {
-    background: rgba(255, 255, 255, 0.8);
-    color: #111;
-    border-color: rgba(0, 0, 0, 0.2);
-}
 /* =========================================
    RESPONSIVIDADE (Telas Menores / Celular)
 ========================================= */
@@ -729,15 +682,13 @@ body.light-mode .glass-form input[type="text"] {
    ESTILOS DA LANDING PAGE (INDEX.HTML)
 ========================================= */
 
-/* --- CORREÇÃO DE ENQUADRAMENTO E RESPONSIVIDADE --- */
-
 /* 1. Alinha o texto e o card perfeitamente no centro vertical */
 .feature-row {
     display: flex;
     align-items: center; 
     justify-content: space-between;
     gap: 50px;
-    flex-wrap: wrap; /* Se a tela diminuir, o card desce para a linha de baixo sem quebrar */
+    flex-wrap: wrap;
 }
 
 .text-col, .card-col {
@@ -747,7 +698,7 @@ body.light-mode .glass-form input[type="text"] {
 
 .card-col {
     display: flex;
-    justify-content: center; /* Centraliza o card dentro da coluna dele */
+    justify-content: center;
 }
 
 /* 2. Trava o tamanho máximo do card para não engolir a tela */
@@ -781,7 +732,7 @@ body.light-mode .glass-form input[type="text"] {
     padding: 20px;
 }
 
-/* 3. O SEGREDO DO ENQUADRAMENTO DA IMAGEM */
+/* 3. ENQUADRAMENTO DA IMAGEM */
 .image-placeholder {
     width: 100%;
     border-radius: 10px;
@@ -790,19 +741,17 @@ body.light-mode .glass-form input[type="text"] {
 }
 
 .image-placeholder img {
-    width: 100%;       /* A imagem ocupa 100% da largura do card */
-    height: 280px;     /* Trava a altura para não ficar gigante */
-    object-fit: cover; /* Preenche o espaço cortando as sobras de forma elegante */
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
     display: block;
     transition: transform 0.5s ease;
 }
 
-/* Um bônus sutil de hover na imagem */
 .premium-card:hover .image-placeholder img {
     transform: scale(1.05);
 }
 
-/* Estilos do Console Mockup */
 .console-style .console {
     font-family: monospace;
     color: #00ff88;
@@ -811,10 +760,9 @@ body.light-mode .glass-form input[type="text"] {
 }
 .console-style .cmd { color: #888; }
 
-/* EFEITO MÁQUINA DE ESCREVER NO TÍTULO DA HOME */
 .hero-content h1 {
-    overflow: hidden; /* Esconde o texto não "digitado" */
-    border-right: 3px solid #0099ff; /* O cursor piscando */
+    overflow: hidden;
+    border-right: 3px solid #0099ff;
     white-space: nowrap;
     margin: 0 auto;
     animation: typing 2.5s steps(30, end), blink-caret .75s step-end infinite;
@@ -998,21 +946,18 @@ textarea:focus {
     color: white;
     font-size: 1.3rem;
     font-weight: 900;
-    text-transform: uppercase;
     letter-spacing: 2px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 50px;
     cursor: pointer;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(var(--r), var(--g), var(--b), 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    animation: respiracao-lol 2.5s infinite alternate; 
     text-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
 @keyframes respiracao-lol {
     0% { box-shadow: 0 0 15px rgba(var(--r), var(--g), var(--b), 0.4), inset 0 0 10px rgba(255, 255, 255, 0.1); transform: scale(1); }
-    100% { box-shadow: 0 0 30px rgba(var(--r), var(--g), var(--b), 0.8), inset 0 0 20px rgba(255, 255, 255, 0.3); transform: scale(1.02); }
+    5% { box-shadow: 0 0 30px rgba(var(--r), var(--g), var(--b), 0.8), inset 0 0 20px rgba(255, 255, 255, 0.3); transform: scale(1.02); }
 }
 
 .btn-gerar-neural:hover {

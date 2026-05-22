@@ -4,24 +4,24 @@
     <meta charset="UTF-8">
     <title>L.I.A - Laboratório de Inteligência Artística</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
+    <meta name="referrer" content="no-referrer">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">L.I.A</div>
         <div class="nav-links">
-            <a href="{{ url_for('mural') }}" style="margin-right: 30px;">Mural</a>
+            <a href="/mural" style="margin-right: 30px;">Mural</a>
             <a href="/login" class="btn-login-nav">Login</a>
             <a href="/cadastro" class="btn-login-nav highlight">Registro</a>
         </div>
     </nav>
 
     <div class="video-container">
-        <video id="vid1" src="{{ url_for('static', filename='videos/shadow-crown.mp4') }}" autoplay loop muted playsinline></video>
-        <video id="vid2" src="{{ url_for('static', filename='videos/cosmic-eye.mp4') }}" autoplay loop muted playsinline></video>
-        <video id="vid3" src="{{ url_for('static', filename='videos/red-eyes.mp4') }}" autoplay loop muted playsinline></video>
+     <video id="vid1" src="https://i.imgur.com/1AnznDR.mp4" autoplay loop muted playsinline></video>
+     <video id="vid2" src="https://i.imgur.com/1h8X8cc.mp4" autoplay loop muted playsinline></video>
+     <video id="vid3" src="https://i.imgur.com/p3cDh4s.mp4" autoplay loop muted playsinline></video>
     </div>
-
     <header class="hero-section" id="sec1">
         <div class="hero-content">
             <h1>CRIANDO O INIMAGINÁVEL</h1>

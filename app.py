@@ -119,14 +119,28 @@ def cadastro():
         data_nascimento = datetime.strptime(data_str, '%Y-%m-%d').date() if data_str else None
         hashed_password = generate_password_hash(password, method='scrypt')
         
-        new_user = User(username=username, email=email, password=hashed_password, data_nascimento=data_nascimento, termos=True)
+        # --- A MÁGICA ENTRA AQUI ---
+        # Defina o link direto do Imgur que será o fundo padrão da L.I.A.
+        fundo_padrao = "https://i.imgur.com/P2UU3l4.mp4" 
+        
+        # Adicione o background_file na criação do usuário
+        new_user = User(
+            username=username, 
+            email=email, 
+            password=hashed_password, 
+            data_nascimento=data_nascimento, 
+            termos=True,
+            background_file=fundo_padrao # <-- O usuário já nasce com o fundo no banco
+        )
+        # ---------------------------
+        
         db.session.add(new_user)
         db.session.commit()
         
         flash('Conta criada! Bem-vindo ao L.I.A.', 'success')
         return redirect(url_for('login'))
+        
     return render_template('cadastro.html')
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -324,11 +338,19 @@ def editar_perfil():
         nova_bio = request.form.get('bio')
         foto = request.files.get('foto_perfil')
         
+        # Captura o link do fundo que o usuário colou
+        novo_link_fundo = request.form.get('background_url')
+        
         if nova_bio and len(nova_bio) > 500:
             flash('A bio deve ter no máximo 500 caracteres.', 'danger')
             return redirect(url_for('editar_perfil'))
             
         current_user.bio = nova_bio
+        
+        # --- A MÁGICA DO FUNDO AQUI ---
+        if novo_link_fundo:
+            current_user.background_file = novo_link_fundo.strip()
+        # ------------------------------
         
         if foto and foto.filename != '' and allowed_file(foto.filename):
             filename = secure_filename(foto.filename)
@@ -341,6 +363,7 @@ def editar_perfil():
         flash('Perfil atualizado com sucesso!', 'success')
         return redirect(url_for('perfil_publico', username=current_user.username))
         
+    # Retorno padrão para quando a página for carregada via GET
     return render_template('editar_perfil.html')
 
 @app.route('/logout')

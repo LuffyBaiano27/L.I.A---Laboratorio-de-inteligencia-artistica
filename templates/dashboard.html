@@ -2,17 +2,22 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
     <title>Visão Geral - L.I.A</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 </head>
 <body class="dashboard-body">
 
-    <div class="video-container">
-        {% if current_user.background_file.endswith('.mp4') %}
-            <video id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" autoplay loop muted playsinline crossorigin="anonymous"></video>
-        {% else %}
-            <img id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1;" crossorigin="anonymous">
+    <div class="video-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050505;">
+        {% if current_user.is_authenticated and current_user.background_file %}
+            {% set bg_url = current_user.background_file if current_user.background_file.startswith('http') else url_for('static', filename=current_user.background_file) %}
+            
+            {% if '.mp4' in bg_url or bg_url.endswith('.mp4') %}
+                <video id="fundo-sistema" src="{{ bg_url }}" autoplay loop muted playsinline preload="auto" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: cover; position: fixed; z-index: -2; pointer-events: none;"></video>
+            {% else %}
+                <img id="fundo-sistema" src="{{ bg_url }}" crossorigin="anonymous" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1; transform: translateZ(0); will-change: transform;">
+            {% endif %}
         {% endif %}
     </div>
 
@@ -28,12 +33,18 @@
         <a href="{{ url_for('perfil_publico', username=current_user.username) }}" class="{% if request.endpoint in ['perfil_publico', 'editar_perfil'] %}active{% endif %}">Meu Perfil</a>
     {% endif %}
         </nav>
+        
         <div class="sidebar-footer">
             <p>User: <strong>{{ current_user.username }}</strong></p>
-            <form action="{{ url_for('mudar_fundo') }}" method="post" enctype="multipart/form-data">
-                <label for="bg-upload" class="btn-change-bg" style="cursor:pointer;">Trocar Fundo ⇪</label>
-                <input type="file" id="bg-upload" name="fundo" accept="image/*,video/mp4" style="display: none;" onchange="this.form.submit()">
+            
+            <form action="{{ url_for('editar_perfil') }}" method="POST" id="form-fundo-rapido" style="display: none;">
+                <input type="hidden" name="background_url" id="link_fundo_rapido">
             </form>
+
+            <a onclick="solicitarLinkFundo()" style="display: block; text-align: left; color: #0099ff; font-weight: bold; cursor: pointer; margin: 15px 0; text-decoration: none; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.5)'" onmouseout="this.style.filter='none'">
+                Trocar Fundo ⇪
+            </a>
+            
             <a href="{{ url_for('logout') }}" class="btn-logout">Sair do Sistema</a>
         </div>
     </aside>
@@ -119,6 +130,17 @@
 
         </div>
     </main>
+
+    <script>
+        function solicitarLinkFundo() {
+            let novoLink = prompt("🔗 Cole o link direto (Dropbox com ?raw=1 ou Imgur) para o seu novo papel de parede:");
+            
+            if (novoLink && novoLink.trim() !== "") {
+                document.getElementById('link_fundo_rapido').value = novoLink.trim();
+                document.getElementById('form-fundo-rapido').submit();
+            }
+        }
+    </script>
 
     <script>
         function extrairCorDoFundo() {

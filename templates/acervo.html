@@ -2,12 +2,19 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
     <title>Meu Acervo - L.I.A</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
         :root { --r: 0; --g: 153; --b: 255; --cor-tema-forte: rgb(var(--r), var(--g), var(--b)); }
-        .dashboard-glass, .sidebar, .panel-header, .empty-state-card { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; box-shadow: 0 8px 32px rgba(var(--r), var(--g), var(--b), 0.2) !important; backdrop-filter: blur(15px); border-radius: 15px !important; }
+        
+        /* CORREÇÃO AQUI: Retirei o .sidebar dessa lista para remover as bordas arredondadas dela! */
+        .dashboard-glass, .panel-header, .empty-state-card { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; box-shadow: 0 8px 32px rgba(var(--r), var(--g), var(--b), 0.2) !important; backdrop-filter: blur(15px); border-radius: 15px !important; }
+        
+        /* A sidebar agora tem sua própria regra sem o border-radius */
+        .sidebar { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border-right: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; backdrop-filter: blur(15px); }
+        
         .sidebar-nav a.active { background: rgba(var(--r), var(--g), var(--b), 0.3) !important; border-left: 4px solid var(--cor-tema-forte) !important; }
         .btn-download { background: var(--cor-tema-forte) !important; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; margin-bottom: 10px; transition: 0.3s; width: 100%; text-align: center; }
         .btn-download:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--cor-tema-forte); }
@@ -46,15 +53,19 @@
 </head>
 <body class="dashboard-body">
 
-    <div class="video-container">
-        {% if current_user.background_file.endswith('.mp4') %}
-            <video id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" autoplay loop muted playsinline crossorigin="anonymous"></video>
-        {% else %}
-            <img id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1;" crossorigin="anonymous">
+    <div class="video-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050505;">
+        {% if current_user.is_authenticated and current_user.background_file %}
+            {% set bg_url = current_user.background_file if current_user.background_file.startswith('http') else url_for('static', filename=current_user.background_file) %}
+            
+            {% if '.mp4' in bg_url or bg_url.endswith('.mp4') %}
+                <video id="fundo-sistema" src="{{ bg_url }}" autoplay loop muted playsinline preload="auto" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: cover; position: fixed; z-index: -2; pointer-events: none;"></video>
+            {% else %}
+                <img id="fundo-sistema" src="{{ bg_url }}" crossorigin="anonymous" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1; transform: translateZ(0); will-change: transform;">
+            {% endif %}
         {% endif %}
     </div>
 
-    <aside class="sidebar dashboard-glass">
+    <aside class="sidebar">
         <div class="sidebar-header"><a href="{{ url_for('home') }}" class="logo">L.I.A</a><p class="subtitle">Workstation</p></div>
         <nav class="sidebar-nav">
             <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Visão Geral</a>
@@ -68,18 +79,23 @@
         </nav>
         <div class="sidebar-footer">
             <p>User: <strong>{{ current_user.username }}</strong></p>
-            <form action="{{ url_for('mudar_fundo') }}" method="post" enctype="multipart/form-data">
-                <label for="bg-upload" class="btn-change-bg" style="cursor:pointer;">Trocar Fundo ⇪</label>
-                <input type="file" id="bg-upload" name="fundo" accept="image/*,video/mp4" style="display: none;" onchange="this.form.submit()">
+            
+            <form action="{{ url_for('editar_perfil') }}" method="POST" id="form-fundo-rapido" style="display: none;">
+                <input type="hidden" name="background_url" id="link_fundo_rapido">
             </form>
+
+            <a onclick="solicitarLinkFundo()" style="display: block; text-align: left; color: #0099ff; font-weight: bold; cursor: pointer; margin: 15px 0; text-decoration: none; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.5)'" onmouseout="this.style.filter='none'">
+                Trocar Fundo ⇪
+            </a>
+
             <a href="{{ url_for('logout') }}" class="btn-logout">Sair do Sistema</a>
         </div>
     </aside>
 
     <main class="main-panel">
-        <header class="panel-header dashboard-glass-header" style="margin-bottom: 20px;">
-            <h2>Meu Acervo Pessoal</h2>
-            <p>Pesquise, gerencie a privacidade e organize suas criações em lote.</p>
+        <header class="panel-header" style="margin-bottom: 20px;">
+            <h2>Meu Acervo</h2>
+            <p>Pesquise, gerencie a privacidade e organize suas criações.</p>
         </header>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -182,7 +198,6 @@
             <button class="btn-lote del" onclick="processarLote('deletar')">🗑️ Apagar</button>
         </div>
     </div>
-    </div>
 
     <div id="imageModal" class="modal-overlay">
         <span class="fechar-modal" onclick="fecharModal()">&times;</span>
@@ -191,6 +206,17 @@
         <span class="nav-seta seta-dir" onclick="mudarImagem(1)">&#10095;</span>
         <p id="legendaModal" class="modal-legenda"></p>
     </div>
+
+    <script>
+        function solicitarLinkFundo() {
+            let novoLink = prompt("🔗 Cole o link direto do Dropbox (com ?raw=1 no final) ou Imgur para o seu novo papel de parede:");
+            
+            if (novoLink && novoLink.trim() !== "") {
+                document.getElementById('link_fundo_rapido').value = novoLink.trim();
+                document.getElementById('form-fundo-rapido').submit();
+            }
+        }
+    </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
 
@@ -264,7 +290,6 @@
             }
         }
 
-        // LÓGICA DE PRIVACIDADE CORRIGIDA PARA DATA-ATTRIBUTES
         async function togglePrivacidade(btnElement) {
             try {
                 const id = btnElement.dataset.id;
@@ -283,7 +308,6 @@
             }
         }
 
-        // DOWNLOAD CORRIGIDO PARA DATA-ATTRIBUTES
         async function baixarArteSeguro(btnElement) {
             try {
                 const imageUrl = btnElement.dataset.url;
@@ -338,7 +362,6 @@
         });
     </script>
     <script>
-        // Função para copiar o prompt e dar feedback visual
         function copiarPrompt(botao, texto) {
             navigator.clipboard.writeText(texto).then(() => {
                 let conteudoOriginal = botao.innerHTML;

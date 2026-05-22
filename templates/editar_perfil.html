@@ -2,12 +2,18 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
     <title>Configurações de Perfil - L.I.A</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
         :root { --r: 0; --g: 153; --b: 255; --cor-tema-forte: rgb(var(--r), var(--g), var(--b)); }
-        .dashboard-glass, .sidebar, .panel-header { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; backdrop-filter: blur(15px); border-radius: 15px !important; }
+        
+        /* CORREÇÃO AQUI: .sidebar removida deste grupo para não ficar arredondada */
+        .dashboard-glass, .panel-header { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; backdrop-filter: blur(15px); border-radius: 15px !important; }
+        
+        /* Regra exclusiva da sidebar com bordas retas */
+        .sidebar { background: rgba(var(--r), var(--g), var(--b), 0.12) !important; border-right: 1px solid rgba(var(--r), var(--g), var(--b), 0.3) !important; backdrop-filter: blur(15px); }
         
         .edit-container { max-width: 800px; margin: 0 auto; padding: 40px; color: white; }
         
@@ -17,8 +23,9 @@
         .file-label { position: absolute; bottom: 0; right: 0; background: var(--cor-tema-forte); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .file-label:hover { transform: scale(1.1); }
 
-        textarea { width: 100%; height: 150px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 10px; font-size: 1.1rem; resize: none; margin-top: 10px; outline: none; transition: 0.3s; }
-        textarea:focus { border-color: var(--cor-tema-forte); box-shadow: 0 0 15px rgba(var(--r), var(--g), var(--b), 0.3); }
+        textarea, .input-link { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 10px; font-size: 1.1rem; margin-top: 10px; outline: none; transition: 0.3s; }
+        textarea { height: 150px; resize: none; }
+        textarea:focus, .input-link:focus { border-color: var(--cor-tema-forte); box-shadow: 0 0 15px rgba(var(--r), var(--g), var(--b), 0.3); }
 
         .btn-save { background: var(--cor-tema-forte); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; margin-top: 30px; transition: 0.3s; }
         .btn-save:hover { filter: brightness(1.2); box-shadow: 0 0 20px var(--cor-tema-forte); transform: translateY(-2px); }
@@ -26,11 +33,15 @@
 </head>
 <body class="dashboard-body">
 
-    <div class="video-container">
-        {% if current_user.background_file.endswith('.mp4') %}
-            <video id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" autoplay loop muted playsinline crossorigin="anonymous"></video>
-        {% else %}
-            <img id="fundo-sistema" src="{{ url_for('static', filename=current_user.background_file) }}" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1;" crossorigin="anonymous">
+    <div class="video-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050505;">
+        {% if current_user.is_authenticated and current_user.background_file %}
+            {% set bg_url = current_user.background_file if current_user.background_file.startswith('http') else url_for('static', filename=current_user.background_file) %}
+            
+            {% if '.mp4' in bg_url or bg_url.endswith('.mp4') %}
+                <video id="fundo-sistema" src="{{ bg_url }}" autoplay loop muted playsinline preload="auto" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: cover; position: fixed; z-index: -2; pointer-events: none;"></video>
+            {% else %}
+                <img id="fundo-sistema" src="{{ bg_url }}" crossorigin="anonymous" style="width:100vw;height:100vh;object-fit:cover;position:fixed;z-index:-1; transform: translateZ(0); will-change: transform;">
+            {% endif %}
         {% endif %}
     </div>
 
@@ -49,6 +60,15 @@
 
         <div class="sidebar-footer">
             <p>User: <strong>{{ current_user.username }}</strong></p>
+
+            <form action="{{ url_for('editar_perfil') }}" method="POST" id="form-fundo-rapido" style="display: none;">
+                <input type="hidden" name="background_url" id="link_fundo_rapido">
+            </form>
+
+            <a onclick="solicitarLinkFundo()" style="display: block; text-align: left; color: #0099ff; font-weight: bold; cursor: pointer; margin: 15px 0; text-decoration: none; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.5)'" onmouseout="this.style.filter='none'">
+                Trocar Fundo ⇪
+            </a>
+
             <a href="{{ url_for('logout') }}" class="btn-logout">Sair do Sistema</a>
         </div>
     </aside>
@@ -73,11 +93,28 @@
                     <textarea name="bio" placeholder="Conte sua história...">{{ current_user.bio }}</textarea>
                 </div>
 
+                <div style="margin-bottom: 20px;">
+                    <label style="color: #ccc; font-weight: bold;">🔗 Link do Papel de Parede (Vídeo MP4 ou Imagem):</label>
+                    <input type="text" name="background_url" class="input-link" value="{{ current_user.background_file }}" placeholder="Ex: https://i.imgur.com/1AnznDR.mp4">
+                    <small style="color: #aaa; font-size: 0.85rem; display: block; margin-top: 5px;">Hospede sua mídia no Imgur ou Dropbox e cole o link direto aqui para alterar o fundo de todo o sistema.</small>
+                </div>
+
                 <button type="submit" class="btn-save">SALVAR ALTERAÇÕES</button>
                 <a href="{{ url_for('perfil_publico', username=current_user.username) }}" style="display: block; text-align: center; margin-top: 20px; color: #aaa; text-decoration: none;">Voltar ao Perfil</a>
             </form>
         </section>
     </main>
+
+    <script>
+        function solicitarLinkFundo() {
+            let novoLink = prompt("🔗 Cole o link direto do Dropbox (com ?raw=1 no final) ou Imgur para o seu novo papel de parede:");
+            
+            if (novoLink && novoLink.trim() !== "") {
+                document.getElementById('link_fundo_rapido').value = novoLink.trim();
+                document.getElementById('form-fundo-rapido').submit();
+            }
+        }
+    </script>
 
     <script>
         // Preview da foto antes de enviar
