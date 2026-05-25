@@ -2,9 +2,9 @@
 
 ![Status](https://img.shields.io/badge/Status-Finalizado-success) ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Framework](https://img.shields.io/badge/Framework-Flask-black) ![Deploy](https://img.shields.io/badge/Deploy-Online-green)
 
-> Aceda ao projeto online: https://luffybaiano27.pythonanywhere.com/
+> Projeto online: https://luffybaiano27.pythonanywhere.com/
 
----
+https://canva.link/dozmnmddrcco1zm ---
 
 ## 📖 Sobre o Projeto
 
