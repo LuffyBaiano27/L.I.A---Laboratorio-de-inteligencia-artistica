@@ -1,8 +1,8 @@
 # 🎨 L.I.A - Laboratório de Inteligência Artística
 
-![Status](https://img.shields.io/badge/Status-Finalizado-success) ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Framework](https://img.shields.io/badge/Framework-Flask-black) ![Deploy](https://img.shields.io/badge/Deploy-Pendente-orange)
+![Status](https://img.shields.io/badge/Status-Finalizado-success) ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Framework](https://img.shields.io/badge/Framework-Flask-black) ![Deploy](https://img.shields.io/badge/Deploy-Online-green)
 
-> Aceda ao projeto online: *[Link do PythonAnywhere a ser adicionado em breve]*
+> Aceda ao projeto online: https://luffybaiano27.pythonanywhere.com/
 
 ---
 
